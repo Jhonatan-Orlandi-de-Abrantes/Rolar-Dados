@@ -1,20 +1,21 @@
-import tkinter as tk, random, json, os, pygame, io, urllib.request
+import tkinter as tk
 from tkinter import ttk
+import random, json, os, io, urllib.request, tempfile, pygame
 from PIL import Image, ImageTk
 from datetime import datetime
 
-GITHUB_BASE = "https://raw.githubusercontent.com/USUARIO/REPO/BRANCH/assets"
+GITHUB_BASE = "https://raw.githubusercontent.com/Jhonatan-Orlandi-de-Abrantes/Rolar-Dados/main/assets"
 
 IMAGE_URLS = {
-    "D20": f"{GITHUB_BASE}/images/d20.png",
-    "D12": f"{GITHUB_BASE}/images/d12.png",
-    "D10": f"{GITHUB_BASE}/images/d10.png",
-    "D8": f"{GITHUB_BASE}/images/d8.png",
-    "D6": f"{GITHUB_BASE}/images/d6.png",
-    "D4": f"{GITHUB_BASE}/images/d4.png",
+    "D20": f"{GITHUB_BASE}/imagens/d20.png",
+    "D12": f"{GITHUB_BASE}/imagens/d12.png",
+    "D10": f"{GITHUB_BASE}/imagens/d10.png",
+    "D8": f"{GITHUB_BASE}/imagens/d8.png",
+    "D6": f"{GITHUB_BASE}/imagens/d6.png",
+    "D4": f"{GITHUB_BASE}/imagens/d4.png",
 }
 
-SOUND_URL = f"{GITHUB_BASE}/sounds/roll.wav"
+SOUND_URL = f"{GITHUB_BASE}/som/roll.wav"
 
 DICE_TYPES = {
     "D20": 20,
@@ -25,13 +26,28 @@ DICE_TYPES = {
     "D4": 4
 }
 
-BASE_DIR = os.path.dirname(__file__)
-IMG_DIR = os.path.join(BASE_DIR, "imagens")
-SOUND_DIR = os.path.join(BASE_DIR, "som")
-HISTORY_FILE = os.path.join(BASE_DIR, "historico.json")
+def get_data_dir():
+    base = os.getenv("APPDATA") or os.path.expanduser("~")
+    path = os.path.join(base, "DiceRoller")
+    os.makedirs(path, exist_ok=True)
+    return path
+
+DATA_DIR = get_data_dir()
+HISTORY_FILE = os.path.join(DATA_DIR, "historico.json")
 
 pygame.mixer.init()
-ROLL_SOUND = pygame.mixer.Sound(os.path.join(SOUND_DIR, "roll.wav"))
+
+def load_remote_sound(url):
+    with urllib.request.urlopen(url) as response:
+        data = response.read()
+
+    temp = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
+    temp.write(data)
+    temp.close()
+
+    return pygame.mixer.Sound(temp.name)
+
+ROLL_SOUND = load_remote_sound(SOUND_URL)
 
 class DiceApp(tk.Tk):
     def __init__(self):
@@ -40,7 +56,7 @@ class DiceApp(tk.Tk):
         self.geometry("900x600")
 
         self.history = self.load_history()
-        self.dice_images = {}
+        self.dice_imagens = {}
 
         self.tabs = ttk.Notebook(self)
         self.tabs.pack(fill="both", expand=True)
@@ -55,10 +71,14 @@ class DiceApp(tk.Tk):
         self.create_sum_tab()
 
     def load_history(self):
-        if os.path.exists(HISTORY_FILE):
+        if not os.path.exists(HISTORY_FILE):
+            return []
+        try:
             with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        return []
+                content = f.read().strip()
+                return json.loads(content) if content else []
+        except json.JSONDecodeError:
+            return []
 
     def save_history(self):
         with open(HISTORY_FILE, "w", encoding="utf-8") as f:
@@ -76,6 +96,11 @@ class DiceApp(tk.Tk):
         self.history_box.insert(0, f"{entry['datetime']} | {dice} | {final_value}")
         self.save_history()
 
+    def clear_history(self):
+        self.history = []
+        self.history_box.delete(0, tk.END)
+        self.save_history()
+
     def roll_dice(self, sides, modifier):
         rolls = max(1, abs(modifier)) if modifier != 0 else 1
         results = [random.randint(1, sides) for _ in range(rolls)]
@@ -87,6 +112,12 @@ class DiceApp(tk.Tk):
         else:
             return results[0], results
 
+    def load_remote_image(self, url):
+        with urllib.request.urlopen(url) as response:
+            data = response.read()
+        image = Image.open(io.BytesIO(data)).resize((100, 100))
+        return ImageTk.PhotoImage(image)
+
     def create_roll_tab(self):
         control = ttk.Frame(self.roll_tab)
         control.pack(pady=10)
@@ -96,17 +127,22 @@ class DiceApp(tk.Tk):
         self.mod_entry.insert(0, "0")
         self.mod_entry.pack(side="left", padx=5)
 
+        ttk.Button(
+            control,
+            text="Limpar Histórico",
+            command=self.clear_history
+        ).pack(side="right", padx=10)
+
         dice_frame = ttk.Frame(self.roll_tab)
         dice_frame.pack(pady=20)
 
         for dice, sides in DICE_TYPES.items():
-            img = Image.open(os.path.join(IMG_DIR, f"{dice.lower()}.png"))
-            img = img.resize((100, 100))
-            self.dice_images[dice] = ImageTk.PhotoImage(img)
+            img = self.load_remote_image(IMAGE_URLS[dice])
+            self.dice_imagens[dice] = img
 
             btn = tk.Button(
                 dice_frame,
-                image=self.dice_images[dice],
+                image=img,
                 command=lambda d=dice, s=sides: self.roll_single(d, s),
                 borderwidth=0
             )
@@ -122,8 +158,10 @@ class DiceApp(tk.Tk):
         self.history_box.pack(fill="both", expand=True)
 
         for h in reversed(self.history):
-            self.history_box.insert(tk.END, f"{h['datetime']} | {h['dice']} | {h['result']}")
-
+            self.history_box.insert(
+                tk.END,
+                f"{h['datetime']} | {h['dice']} | {h['result']}"
+            )
 
     def roll_single(self, dice, sides):
         try:
