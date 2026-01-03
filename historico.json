@@ -1,0 +1,257 @@
+[
+    {
+        "datetime": "03/01/2026 13:08:46",
+        "dice": "D20",
+        "modifier": 0,
+        "result": 15,
+        "rolls": [
+            15
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:08:48",
+        "dice": "D12",
+        "modifier": 0,
+        "result": 11,
+        "rolls": [
+            11
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:08:49",
+        "dice": "D10",
+        "modifier": 0,
+        "result": 7,
+        "rolls": [
+            7
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:08:51",
+        "dice": "D8",
+        "modifier": 0,
+        "result": 1,
+        "rolls": [
+            1
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:08:52",
+        "dice": "D6",
+        "modifier": 0,
+        "result": 6,
+        "rolls": [
+            6
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:08:53",
+        "dice": "D4",
+        "modifier": 0,
+        "result": 4,
+        "rolls": [
+            4
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:08:57",
+        "dice": "D8",
+        "modifier": 4,
+        "result": 6,
+        "rolls": [
+            5,
+            3,
+            6,
+            1
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:09:34",
+        "dice": "D4",
+        "modifier": 4,
+        "result": 4,
+        "rolls": [
+            2,
+            4,
+            1,
+            3
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:09:34",
+        "dice": "D6",
+        "modifier": 4,
+        "result": 4,
+        "rolls": [
+            4,
+            2,
+            1,
+            1
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:09:34",
+        "dice": "D8",
+        "modifier": 4,
+        "result": 6,
+        "rolls": [
+            6,
+            1,
+            1,
+            6
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:09:35",
+        "dice": "D10",
+        "modifier": 4,
+        "result": 10,
+        "rolls": [
+            9,
+            9,
+            1,
+            10
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:09:35",
+        "dice": "D12",
+        "modifier": 4,
+        "result": 9,
+        "rolls": [
+            8,
+            4,
+            9,
+            1
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:09:35",
+        "dice": "D20",
+        "modifier": 4,
+        "result": 18,
+        "rolls": [
+            3,
+            3,
+            18,
+            10
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:10:05",
+        "dice": "D10",
+        "modifier": 0,
+        "result": 5,
+        "rolls": [
+            5
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:12:48",
+        "dice": "D20",
+        "modifier": 0,
+        "result": 4,
+        "rolls": [
+            4
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:12:49",
+        "dice": "D12",
+        "modifier": 0,
+        "result": 9,
+        "rolls": [
+            9
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:12:49",
+        "dice": "D10",
+        "modifier": 0,
+        "result": 8,
+        "rolls": [
+            8
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:12:50",
+        "dice": "D8",
+        "modifier": 0,
+        "result": 1,
+        "rolls": [
+            1
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:12:50",
+        "dice": "D6",
+        "modifier": 0,
+        "result": 2,
+        "rolls": [
+            2
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:12:51",
+        "dice": "D4",
+        "modifier": 0,
+        "result": 2,
+        "rolls": [
+            2
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:13:14",
+        "dice": "D10",
+        "modifier": 0,
+        "result": 6,
+        "rolls": [
+            6
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:13:14",
+        "dice": "D10",
+        "modifier": 0,
+        "result": 4,
+        "rolls": [
+            4
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:13:14",
+        "dice": "D10",
+        "modifier": 0,
+        "result": 6,
+        "rolls": [
+            6
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:13:14",
+        "dice": "D10",
+        "modifier": 0,
+        "result": 9,
+        "rolls": [
+            9
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:13:14",
+        "dice": "D10",
+        "modifier": 0,
+        "result": 1,
+        "rolls": [
+            1
+        ]
+    },
+    {
+        "datetime": "03/01/2026 13:13:14",
+        "dice": "D10",
+        "modifier": 0,
+        "result": 5,
+        "rolls": [
+            5
+        ]
+    }
+]
