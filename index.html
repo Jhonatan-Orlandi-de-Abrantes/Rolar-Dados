@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Rolar Dados</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: #eee;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.tabs button {
+    padding: 10px 20px;
+    border: none;
+    background: #333;
+    color: #fff;
+    cursor: pointer;
+    margin: 0 5px;
+}
+
+.tabs button.active {
+    background: #6200ea;
+}
+
+.section {
+    display: none;
+    max-width: 900px;
+    margin: auto;
+}
+
+.section.active {
+    display: block;
+}
+
+.controls {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.dice-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.dice {
+    width: 100px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.dice:hover {
+    transform: scale(1.05);
+}
+
+.result {
+    text-align: center;
+    font-size: 1.5em;
+    margin-top: 15px;
+}
+
+.history {
+    margin-top: 20px;
+    background: #1e1e1e;
+    padding: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.history div {
+    border-bottom: 1px solid #333;
+    padding: 5px 0;
+}
+
+.sum-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 5px 0;
+}
+</style>
+</head>
+
+<body>
+
+    <h1>🎲 Rolar Dados</h1>
+
+    <div class="tabs">
+        <button class="active" onclick="openTab('roll')">Rolagem</button>
+        <button onclick="openTab('sum')">Soma de Dados</button>
+    </div>
+
+    <!-- ROLAGEM -->
+    <div id="roll" class="section active">
+
+        <div class="controls">
+            Vantagem / Desvantagem:
+            <input type="number" id="modifier" value="0" style="width:60px;">
+            <button onclick="clearHistory()">Limpar Histórico</button>
+        </div>
+
+        <div class="dice-container" id="diceContainer"></div>
+
+        <div class="result" id="result">Resultado: -</div>
+
+        <div class="history" id="history"></div>
+    </div>
+
+    <!-- SOMA -->
+    <div id="sum" class="section">
+
+        <div id="sumControls"></div>
+
+        <div class="controls">
+            <button onclick="rollSum()">Rolar Soma</button>
+        </div>
+
+        <div class="result" id="sumResult">Soma Total: -</div>
+    </div>
+
+    <audio id="rollSound" src="https://raw.githubusercontent.com/Jhonatan-Orlandi-de-Abrantes/Rolar-Dados/main/assets/sounds/roll.wav"></audio>
+
+<script>
+    const DICE = {
+        D20: 20,
+        D12: 12,
+        D10: 10,
+        D8: 8,
+        D6: 6,
+        D4: 4
+    };
+
+    const IMAGE_BASE = "https://raw.githubusercontent.com/Jhonatan-Orlandi-de-Abrantes/Rolar-Dados/main/assets/imagens/";
+
+    const historyKey = "diceHistory";
+
+    const historyEl = document.getElementById("history");
+    const resultEl = document.getElementById("result");
+    const rollSound = document.getElementById("rollSound");
+
+    function openTab(id) {
+        document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+        document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        event.target.classList.add("active");
+    }
+
+    const diceContainer = document.getElementById("diceContainer");
+
+    for (let dice in DICE) {
+        const img = document.createElement("img");
+        img.src = IMAGE_BASE + dice.toLowerCase() + ".png";
+        img.className = "dice";
+        img.onclick = () => rollDice(dice);
+        diceContainer.appendChild(img);
+    }
+
+    function loadHistory() {
+        return JSON.parse(localStorage.getItem(historyKey)) || [];
+    }
+
+    function saveHistory(history) {
+        localStorage.setItem(historyKey, JSON.stringify(history));
+    }
+
+    function renderHistory() {
+        historyEl.innerHTML = "";
+        loadHistory().slice().reverse().forEach(h => {
+            const div = document.createElement("div");
+            div.textContent = `${h.datetime} | ${h.dice} | ${h.result}`;
+            historyEl.appendChild(div);
+        });
+    }
+
+    function clearHistory() {
+        localStorage.removeItem(historyKey);
+        renderHistory();
+    }
+
+    function rollDice(dice) {
+        rollSound.play();
+
+        const sides = DICE[dice];
+        let mod = parseInt(document.getElementById("modifier").value) || 0;
+        let rolls = mod === 0 ? 1 : Math.abs(mod);
+
+        let results = [];
+        for (let i = 0; i < rolls; i++) {
+            results.push(Math.floor(Math.random() * sides) + 1);
+        }
+
+        let final = mod > 0 ? Math.max(...results)
+                : mod < 0 ? Math.min(...results)
+                : results[0];
+
+        resultEl.textContent = `${dice}: ${final} | Rolagens: ${results.join(", ")}`;
+
+        const history = loadHistory();
+            history.push({
+                datetime: new Date().toLocaleString(),
+                dice,
+                modifier: mod,
+                result: final,
+                rolls: results
+            });
+
+            saveHistory(history);
+            renderHistory();
+        }
+
+        const sumControls = document.getElementById("sumControls");
+
+        for (let dice in DICE) {
+            const row = document.createElement("div");
+            row.className = "sum-row";
+            row.innerHTML = `
+                <label>${dice}</label>
+                <input type="number" min="0" value="0" id="sum-${dice}" style="width:60px;">
+            `;
+            sumControls.appendChild(row);
+        }
+
+        function rollSum() {
+            rollSound.play();
+
+            let total = 0;
+            let details = [];
+
+            for (let dice in DICE) {
+                const count = parseInt(document.getElementById(`sum-${dice}`).value) || 0;
+                for (let i = 0; i < count; i++) {
+                    let roll = Math.floor(Math.random() * DICE[dice]) + 1;
+                    total += roll;
+                    details.push(`${dice}:${roll}`);
+                }
+            }
+
+            document.getElementById("sumResult").textContent = `Soma Total: ${total} | ${details.join(", ")}`;
+        }
+
+        renderHistory();
+</script>
+
+</body>
+</html>
