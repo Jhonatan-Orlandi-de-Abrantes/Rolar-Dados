@@ -102,8 +102,9 @@ h1 {
     <h1>🎲 Rolar Dados</h1>
 
     <div class="tabs">
-        <button class="active" onclick="openTab('roll')">Rolagem</button>
-        <button onclick="openTab('sum')">Soma de Dados</button>
+        <!-- passamos `event` para evitar erro de event undefined -->
+        <button class="active" onclick="openTab('roll', event)">Rolagem</button>
+        <button onclick="openTab('sum', event)">Soma de Dados</button>
     </div>
 
     <!-- ROLAGEM -->
@@ -134,7 +135,9 @@ h1 {
         <div class="result" id="sumResult">Soma Total: -</div>
     </div>
 
-    <audio id="rollSound" src="https://raw.githubusercontent.com/Jhonatan-Orlandi-de-Abrantes/Rolar-Dados/main/assets/sounds/roll.wav"></audio>
+    <!-- Use caminho relativo (funciona localmente / hospedado).
+         Se preferir usar a URL raw do GitHub, substitua o src abaixo. -->
+    <audio id="rollSound" src="assets/som/roll.wav" preload="auto"></audio>
 
 <script>
     const DICE = {
@@ -154,19 +157,26 @@ h1 {
     const resultEl = document.getElementById("result");
     const rollSound = document.getElementById("rollSound");
 
-    function openTab(id) {
+    // Função para abrir abas - agora recebe event para manipular a classe active do botão corretamente
+    function openTab(id, ev) {
         document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
         document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
         document.getElementById(id).classList.add("active");
-        event.target.classList.add("active");
+        if (ev && ev.currentTarget) {
+            ev.currentTarget.classList.add("active");
+        } else if (ev && ev.target) {
+            ev.target.classList.add("active");
+        }
     }
 
     const diceContainer = document.getElementById("diceContainer");
 
     for (let dice in DICE) {
         const img = document.createElement("img");
+        // A URL das imagens no repositório está no IMAGE_BASE; se você preferir usar local: "assets/imagens/..."
         img.src = IMAGE_BASE + dice.toLowerCase() + ".png";
         img.className = "dice";
+        img.alt = dice;
         img.onclick = () => rollDice(dice);
         diceContainer.appendChild(img);
     }
@@ -193,8 +203,26 @@ h1 {
         renderHistory();
     }
 
+    // Função auxiliar para tocar o som com reset e tratamento de promise
+    function playRollSound() {
+        if (!rollSound) return;
+        try {
+            rollSound.currentTime = 0;
+            const playPromise = rollSound.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    // Alguns navegadores exigem interação; log para debugging
+                    console.warn("Erro ao tocar o som:", err);
+                });
+            }
+        } catch (err) {
+            console.warn("Não foi possível tocar o som:", err);
+        }
+    }
+
     function rollDice(dice) {
-        rollSound.play();
+        // toca som ao rolar
+        playRollSound();
 
         const sides = DICE[dice];
         let mod = parseInt(document.getElementById("modifier").value) || 0;
@@ -237,7 +265,8 @@ h1 {
         }
 
         function rollSum() {
-            rollSound.play();
+            // toca som ao rolar soma
+            playRollSound();
 
             let total = 0;
             let details = [];
