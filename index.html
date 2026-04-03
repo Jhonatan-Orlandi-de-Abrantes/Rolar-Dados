@@ -102,17 +102,15 @@ h1 {
     <h1>🎲 Rolar Dados</h1>
 
     <div class="tabs">
-        <!-- passamos `event` para evitar erro de event undefined -->
         <button class="active" onclick="openTab('roll', event)">Rolagem</button>
         <button onclick="openTab('sum', event)">Soma de Dados</button>
     </div>
 
-    <!-- ROLAGEM -->
     <div id="roll" class="section active">
 
         <div class="controls">
             Vantagem / Desvantagem:
-            <input type="number" id="modifier" value="0" style="width:60px;">
+            <input type="number" id="modifier" value="1" style="width:60px;" onchange="validateModifier()">
             <button onclick="clearHistory()">Limpar Histórico</button>
         </div>
 
@@ -123,20 +121,20 @@ h1 {
         <div class="history" id="history"></div>
     </div>
 
-    <!-- SOMA -->
     <div id="sum" class="section">
 
         <div id="sumControls"></div>
 
         <div class="controls">
             <button onclick="rollSum()">Rolar Soma</button>
+            <button onclick="clearSumHistory()">Limpar Histórico</button>
         </div>
 
         <div class="result" id="sumResult">Soma Total: -</div>
+
+        <div class="history" id="sumHistory"></div>
     </div>
 
-    <!-- Use caminho relativo (funciona localmente / hospedado).
-         Se preferir usar a URL raw do GitHub, substitua o src abaixo. -->
     <audio id="rollSound" src="assets/som/roll.wav" preload="auto"></audio>
 
 <script>
@@ -152,8 +150,10 @@ h1 {
     const IMAGE_BASE = "https://raw.githubusercontent.com/Jhonatan-Orlandi-de-Abrantes/Rolar-Dados/main/assets/imagens/";
 
     const historyKey = "diceHistory";
+    const sumHistoryKey = "diceSumHistory";
 
     const historyEl = document.getElementById("history");
+    const sumHistoryEl = document.getElementById("sumHistory");
     const resultEl = document.getElementById("result");
     const rollSound = document.getElementById("rollSound");
 
@@ -203,6 +203,28 @@ h1 {
         renderHistory();
     }
 
+    function loadSumHistory() {
+        return JSON.parse(localStorage.getItem(sumHistoryKey)) || [];
+    }
+
+    function saveSumHistory(history) {
+        localStorage.setItem(sumHistoryKey, JSON.stringify(history));
+    }
+
+    function renderSumHistory() {
+        sumHistoryEl.innerHTML = "";
+        loadSumHistory().slice().reverse().forEach(h => {
+            const div = document.createElement("div");
+            div.textContent = `${h.datetime} | Total: ${h.total}`;
+            sumHistoryEl.appendChild(div);
+        });
+    }
+
+    function clearSumHistory() {
+        localStorage.removeItem(sumHistoryKey);
+        renderSumHistory();
+    }
+
     // Função auxiliar para tocar o som com reset e tratamento de promise
     function playRollSound() {
         if (!rollSound) return;
@@ -220,13 +242,26 @@ h1 {
         }
     }
 
+    function validateModifier() {
+        const modInput = document.getElementById("modifier");
+        let value = parseInt(modInput.value) || 0;
+        // Se for 0, muda para 1
+        if (value === 0) {
+            modInput.value = "1";
+        }
+    }
+
     function rollDice(dice) {
         // toca som ao rolar
         playRollSound();
 
         const sides = DICE[dice];
-        let mod = parseInt(document.getElementById("modifier").value) || 0;
-        let rolls = mod === 0 ? 1 : Math.abs(mod);
+        let mod = parseInt(document.getElementById("modifier").value) || 1;
+        // Se for 0, força para 1
+        if (mod === 0) {
+            mod = 1;
+        }
+        let rolls = Math.abs(mod);
 
         let results = [];
         for (let i = 0; i < rolls; i++) {
@@ -237,7 +272,8 @@ h1 {
                 : mod < 0 ? Math.min(...results)
                 : results[0];
 
-        resultEl.textContent = `${dice}: ${final} | Rolagens: ${results.join(", ")}`;
+        const sign = mod > 0 ? '+' : '';
+        resultEl.textContent = `${dice}: ${final} - Rolagens ${sign}${mod}`;
 
         const history = loadHistory();
             history.push({
@@ -281,9 +317,19 @@ h1 {
             }
 
             document.getElementById("sumResult").textContent = `Soma Total: ${total} | ${details.join(", ")}`;
+
+            const sumHistory = loadSumHistory();
+            sumHistory.push({
+                datetime: new Date().toLocaleString(),
+                total: total,
+                details: details
+            });
+            saveSumHistory(sumHistory);
+            renderSumHistory();
         }
 
         renderHistory();
+        renderSumHistory();
 </script>
 
 </body>
